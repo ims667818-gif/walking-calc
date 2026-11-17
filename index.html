@@ -1,0 +1,825 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12161E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>내 걸음수 환산기 · 걸음이 치킨 몇 마리인지</title>
+<meta name="description" content="걸음수를 넣으면 치킨 몇 마리인지, 서울에서 부산까지 몇 번인지 알려드립니다. 설치·로그인 없이 링크만 열면 끝.">
+<meta property="og:title" content="내 걸음수 환산기">
+<meta property="og:description" content="걸음수를 넣으면 치킨 몇 마리인지, 서울에서 부산까지 몇 번인지 알려드립니다.">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(120% 55% at 92% -10%, rgba(255,122,0,.17), rgba(255,122,0,0) 62%),
+      radial-gradient(90% 40% at -10% 104%, rgba(255,148,54,.08), rgba(255,148,54,0) 60%),
+      #12161E;
+    background-attachment:fixed;
+    color:#F2F4F6;
+    font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+    font-size:16px;line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .wrap{max-width:520px;margin:0 auto;padding:30px 16px 148px}
+  .eyebrow{font-size:11px;font-weight:800;letter-spacing:.14em;color:#FF9436;margin:0 0 10px;text-transform:uppercase}
+  h1{font-size:29px;line-height:1.25;font-weight:800;letter-spacing:-.035em;margin:0 0 10px}
+  .lead{font-size:14.5px;line-height:1.62;color:#9AA3AE;margin:0 0 8px;letter-spacing:-.01em}
+  .maker{font-size:11.5px;color:#68727F;margin:0 0 22px}
+
+  .card{background:#1B212D;border:1px solid rgba(255,255,255,.045);border-radius:24px;padding:20px;margin-bottom:10px}
+  .label{display:flex;align-items:baseline;justify-content:space-between;margin:0 0 10px}
+  .label .t{font-size:13px;font-weight:700;color:#B0B8C1;letter-spacing:-.01em}
+  .label .h{font-size:11px;color:#5C6675}
+
+  .field{display:flex;align-items:center;gap:8px;background:#232A36;border:1.5px solid transparent;border-radius:18px;padding:8px 8px 8px 16px;transition:border-color .15s ease}
+  .field:focus-within{border-color:rgba(255,122,0,.6)}
+  .big{flex:1 1 auto;min-width:0;width:100%;background:transparent;border:0;outline:0;color:#F2F4F6;font:inherit;font-size:29px;font-weight:800;letter-spacing:-.03em;padding:7px 0;font-variant-numeric:tabular-nums}
+  .big::placeholder{color:#4E5866}
+  .unit{font-size:14px;font-weight:700;color:#8B95A1;flex:0 0 auto}
+
+  .seg{display:flex;flex:0 0 auto;background:#12161E;border-radius:12px;padding:3px;gap:2px}
+  .seg button{border:0;background:transparent;color:#8B95A1;font:inherit;font-size:13px;font-weight:700;padding:8px 11px;border-radius:9px;cursor:pointer;letter-spacing:-.01em}
+  .seg button.on{background:#FF7A00;color:#14181F}
+
+  .chips{display:flex;gap:7px;flex-wrap:wrap}
+  .chip{flex:1 1 0;min-width:58px;padding:11px 4px;border-radius:14px;background:#232A36;color:#B0B8C1;border:1.5px solid transparent;font:inherit;font-size:13.5px;font-weight:700;cursor:pointer;text-align:center;letter-spacing:-.01em;transition:background .12s,color .12s}
+  .chip.on{background:linear-gradient(135deg,#FF7A00,#FF9436);color:#14181F}
+
+  .conv{font-size:12px;color:#7C8794;margin:10px 2px 0;letter-spacing:-.01em}
+  .conv b{color:#FFAA5C;font-weight:700}
+
+  .quick{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+  .quick button{flex:1 1 0;min-width:54px;padding:9px 4px;border-radius:11px;border:1px solid #2C3441;background:transparent;color:#8B95A1;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
+  .quick button:active{background:#232A36}
+
+  .cust{display:flex;align-items:center;gap:8px;margin-top:10px;background:#232A36;border-radius:14px;padding:6px 14px}
+  .cust input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:#F2F4F6;font:inherit;font-size:20px;font-weight:800;padding:8px 0;font-variant-numeric:tabular-nums}
+  .cust span{font-size:13px;color:#8B95A1;font-weight:700}
+  .cust[hidden]{display:none}
+
+  .result{margin-top:24px}
+  .result .head{display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 10px}
+  .result .head .t{font-size:13px;font-weight:800;color:#FF9436;letter-spacing:-.01em}
+  .result .head .s{font-size:11.5px;color:#5C6675}
+
+  .hero-num{font-size:40px;font-weight:800;letter-spacing:-.04em;line-height:1.12;font-variant-numeric:tabular-nums;margin:2px 0 0}
+  .hero-num small{font-size:15px;font-weight:700;color:#8B95A1;margin-left:5px;letter-spacing:-.01em}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
+  .mini{background:#232A36;border-radius:16px;padding:12px 14px;min-width:0}
+  .mini .k{font-size:11.5px;color:#8B95A1;font-weight:700;margin-bottom:3px}
+  .mini .v{font-size:19px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mini .v small{font-size:11.5px;font-weight:700;color:#8B95A1;margin-left:2px}
+
+  .sec{font-size:12.5px;font-weight:800;color:#8B95A1;letter-spacing:-.01em;margin:0 0 12px}
+  .foods{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .food{background:#232A36;border-radius:18px;padding:13px 14px;min-width:0}
+  .food .e{font-size:20px;line-height:1.1}
+  .food .v{font-size:21px;font-weight:800;letter-spacing:-.03em;margin-top:7px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .food .v small{font-size:12px;font-weight:800;color:#FF9436;margin-left:1px}
+  .food .l{font-size:11.5px;color:#8B95A1;margin-top:2px;letter-spacing:-.01em}
+  .food .b{font-size:10px;color:#5A6472;margin-top:1px;letter-spacing:-.01em}
+
+  .rows{margin-top:-2px}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.055)}
+  .row:last-child{border-bottom:0;padding-bottom:2px}
+  .row .l{font-size:14px;color:#C0C7CF;font-weight:700;letter-spacing:-.01em}
+  .row .l em{display:block;font-style:normal;font-size:10.5px;color:#5A6472;font-weight:600;margin-top:2px}
+  .row .v{font-size:19px;font-weight:800;color:#FF9436;letter-spacing:-.03em;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+  .fat{background:linear-gradient(135deg,rgba(255,122,0,.19),rgba(255,122,0,.045));border:1px solid rgba(255,122,0,.26);border-radius:22px;padding:18px;margin-bottom:10px}
+  .fat .k{font-size:11px;font-weight:800;color:#FF9436;letter-spacing:.04em;margin-bottom:6px}
+  .fat .v{font-size:29px;font-weight:800;letter-spacing:-.04em;color:#FFFFFF;font-variant-numeric:tabular-nums;line-height:1.2}
+  .fat .v em{font-style:normal;color:#FF9436}
+  .fat .n{font-size:11.5px;line-height:1.6;color:#A9A196;margin-top:8px;letter-spacing:-.01em}
+
+  .tip-txt{font-size:13.5px;line-height:1.6;color:#B0B8C1;margin:0 0 12px;letter-spacing:-.015em}
+  .tip-chips{display:flex;gap:7px}
+  .tip-chips button{flex:1;padding:11px 4px;border-radius:13px;background:#232A36;border:1.5px solid transparent;color:#B0B8C1;font:inherit;font-size:13px;font-weight:800;cursor:pointer}
+  .tip-chips button.on{background:rgba(255,122,0,.16);border-color:rgba(255,122,0,.55);color:#FFAA5C}
+  .tip-out{font-size:13px;line-height:1.6;color:#9AA3AE;margin:12px 0 0;letter-spacing:-.015em}
+  .tip-out b{color:#FF9436;font-weight:800}
+
+  details.basis{background:#191F29;border-radius:18px;padding:15px 18px;margin-top:10px;font-size:12px;color:#8B95A1;border:1px solid rgba(255,255,255,.04)}
+  details.basis summary{cursor:pointer;font-weight:800;color:#B0B8C1;font-size:12.5px;list-style:none;outline:none}
+  details.basis summary::-webkit-details-marker{display:none}
+  details.basis summary::after{content:"+";float:right;color:#5C6675;font-weight:800}
+  details.basis[open] summary::after{content:"–"}
+  details.basis ul{margin:10px 0 0;padding-left:16px;line-height:1.85;letter-spacing:-.01em}
+
+  .foot{text-align:center;font-size:11px;color:#5A6472;line-height:1.8;margin:26px 0 0}
+  .foot a{color:#8B95A1;text-decoration:none;font-weight:700}
+
+  .cta{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:14px 16px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(18,22,30,0),rgba(18,22,30,.94) 34%,#12161E 78%);pointer-events:none}
+  .cta button{pointer-events:auto;display:block;width:100%;max-width:520px;margin:0 auto;padding:17px;border:0;border-radius:18px;background:linear-gradient(135deg,#FF7A00,#FF9436);color:#14181F;font:inherit;font-size:15.5px;font-weight:800;letter-spacing:-.01em;box-shadow:0 10px 30px rgba(255,122,0,.26);cursor:pointer;transition:transform .1s ease}
+  .cta button:active{transform:translateY(1px)}
+
+  .sheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center;background:rgba(8,11,16,.82);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+  .sheet[hidden]{display:none}
+  .sheet-in{width:100%;max-width:520px;background:#1B212D;border:1px solid rgba(255,255,255,.06);border-bottom:0;border-radius:26px 26px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom));animation:up .2s ease}
+  @keyframes up{from{transform:translateY(28px);opacity:.5}to{transform:none;opacity:1}}
+  .sheet-h{display:flex;align-items:center;justify-content:space-between;padding:2px 4px 8px}
+  .sheet-h h3{margin:0;font-size:15px;font-weight:800;letter-spacing:-.02em}
+  .sheet-h span{font-size:11.5px;color:#5C6675}
+  .sheet img{display:block;width:100%;max-height:54vh;object-fit:contain;background:#12161E;border-radius:14px;margin:4px 0 8px}
+  .sheet .hint{font-size:11.5px;color:#7C8794;text-align:center;margin:0 0 12px;line-height:1.5}
+  .sheet .btns{display:flex;gap:8px}
+  .sheet .btns button{flex:1;padding:15px;border-radius:15px;border:0;font:inherit;font-size:15px;font-weight:800;cursor:pointer;letter-spacing:-.01em}
+  .btn-primary{background:linear-gradient(135deg,#FF7A00,#FF9436);color:#14181F}
+  .btn-ghost{background:#2A3140;color:#C7CED6}
+
+  .toast{position:fixed;left:50%;bottom:98px;transform:translate(-50%,8px);background:#2C3441;color:#F2F4F6;font-size:12.5px;font-weight:600;padding:11px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:70;max-width:86vw;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <p class="eyebrow">Cashwalk → Chicken</p>
+  <h1>내 걸음수 환산기</h1>
+  <p class="lead">걸음수를 넣으면 치킨 몇 마리인지, 서울에서 부산까지 몇 번인지 알려드립니다. 설치도 로그인도 없습니다.</p>
+  <p class="maker">4년 5개월 동안 매일 1만 보 걸은 사람이 만들었습니다.</p>
+
+  <section class="card">
+    <div class="label"><span class="t">기간</span><span class="h">오늘까지 거슬러</span></div>
+    <div class="chips" id="periodChips">
+      <button class="chip on" data-months="1">1개월</button>
+      <button class="chip" data-months="6">6개월</button>
+      <button class="chip" data-months="12">1년</button>
+      <button class="chip" data-months="custom">직접</button>
+    </div>
+    <div class="cust" id="custRow" hidden>
+      <input id="custInput" type="text" inputmode="numeric" value="3" aria-label="개월 수">
+      <span>개월</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="label"><span class="t">걸음수</span><span class="h">둘 중 하나만 넣어도 됩니다</span></div>
+    <div class="field">
+      <input class="big" id="valInput" type="text" inputmode="numeric" autocomplete="off" value="10,000" aria-label="걸음수 또는 거리">
+      <div class="seg" id="unitSeg" role="group" aria-label="단위">
+        <button class="on" data-unit="step">걸음</button>
+        <button data-unit="km">km</button>
+      </div>
+    </div>
+    <p class="conv" id="convLine">10,000걸음 = 약 <b>6.5km</b></p>
+    <div class="quick" id="quickChips">
+      <button data-quick="5000">5,000</button>
+      <button data-quick="8000">8,000</button>
+      <button data-quick="10000">10,000</button>
+      <button data-quick="15000">15,000</button>
+      <button data-quick="20000">20,000</button>
+    </div>
+    <div class="chips" id="modeChips" style="margin-top:12px">
+      <button class="chip on" data-mode="daily">하루 평균</button>
+      <button class="chip" data-mode="total">기간 전체</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="label"><span class="t">몸무게</span><span class="h">칼로리 계산에만 씁니다</span></div>
+    <div class="field">
+      <input class="big" id="weightInput" type="text" inputmode="decimal" autocomplete="off" value="55" aria-label="몸무게">
+      <span class="unit">kg</span>
+    </div>
+  </section>
+
+  <section class="result" id="result" aria-live="polite">
+    <div class="head"><span class="t">이만큼 걸었습니다</span><span class="s" id="periodOut">최근 1개월 · 30일</span></div>
+
+    <div class="card">
+      <div class="hero-num"><span id="outSteps">300,000</span><small>걸음</small></div>
+      <div class="two">
+        <div class="mini"><div class="k">총 거리</div><div class="v"><span id="outKm">195</span><small>km</small></div></div>
+        <div class="mini"><div class="k">태운 칼로리</div><div class="v"><span id="outKcal">9,900</span><small>kcal</small></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec">먹는 걸로 치면</div>
+      <div class="foods" id="foods"></div>
+    </div>
+
+    <div class="card">
+      <div class="sec">거리로 치면</div>
+      <div class="rows" id="rows"></div>
+    </div>
+
+    <div class="fat">
+      <div class="k">지방으로 치면</div>
+      <div class="v">1년이면 체지방 <em id="outFat">15.6kg</em>어치</div>
+      <div class="n">7,700kcal = 체지방 1kg으로 단순 환산. 먹는 양은 그대로일 때 얘기이고, 실제 빠지는 몸무게는 다릅니다.</div>
+    </div>
+
+    <div class="card">
+      <div class="sec">하루 10분만 더 귀찮게</div>
+      <p class="tip-txt">버스 두 정거장 먼저 내리기, 산책 한 바퀴 더. 딱 이만큼만 붙여보면요.</p>
+      <div class="tip-chips" id="extraChips">
+        <button data-extra="1000">+1,000보</button>
+        <button data-extra="2000" class="on">+2,000보</button>
+        <button data-extra="5000">+5,000보</button>
+      </div>
+      <p class="tip-out">1년 뒤 체지방 <b id="extraOut">3.1kg</b>어치를 더 태웁니다.</p>
+    </div>
+
+    <details class="basis">
+      <summary>숫자는 이렇게 계산했습니다</summary>
+      <ul>
+        <li>1걸음 = 0.65m (보통 걸음 기준)</li>
+        <li>칼로리 = 걸음 × 0.0006 × 몸무게(kg). 55kg이면 약 30걸음에 1kcal</li>
+        <li>체지방 1kg = 7,700kcal</li>
+        <li>치킨 한 마리 2,000kcal · 엽떡 한 그릇 1,500kcal · 아메리카노 한 잔 10kcal · 밥 한 공기 300kcal</li>
+        <li>서울→부산 400km(왕복 800km) · 한라산 성판악 코스 왕복 19.2km · 마라톤 42.195km</li>
+        <li>몸무게를 비우면 55kg으로 계산합니다</li>
+      </ul>
+    </details>
+
+    <p class="foot">
+      만든 사람 <a href="https://blog.naver.com/etldmsdla" target="_blank" rel="noopener">blog.naver.com/etldmsdla</a><br>
+      재미로 보는 숫자입니다. 의학적 조언은 아니에요.
+    </p>
+  </section>
+</main>
+
+<div class="cta"><button id="saveBtn" type="button">결과 카드 이미지로 저장</button></div>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-in" role="dialog" aria-modal="true" aria-label="결과 카드 저장">
+    <div class="sheet-h"><h3>결과 카드</h3><span>1080 × 1350</span></div>
+    <img id="previewImg" alt="걸음수 환산 결과 카드">
+    <p class="hint">저장이 안 되면 이미지를 1~2초 길게 눌러 ‘사진에 추가’를 눌러주세요.</p>
+    <div class="btns">
+      <button class="btn-ghost" id="closeSheet" type="button">닫기</button>
+      <button class="btn-primary" id="dlBtn" type="button">이미지 저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<canvas id="cardCanvas" width="1080" height="1350" style="display:none"></canvas>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ================= CORE (순수 계산) ================= */
+  var M_PER_STEP = 0.65;
+  var KCAL_PER_STEP_KG = 0.0006;   // 1걸음당 몸무게 1kg 기준 kcal
+  var KCAL_PER_KG_FAT = 7700;
+  var KCAL_CHICKEN = 2000, KCAL_TTEOK = 1500, KCAL_AMERICANO = 10, KCAL_RICE = 300;
+  var KM_BUSAN_RT = 800, KM_HALLASAN_RT = 19.2, KM_MARATHON = 42.195;
+
+  function daysForMonths(m) {
+    m = Math.round(Number(m));
+    if (!isFinite(m) || m < 1) m = 1;
+    if (m > 600) m = 600;
+    var now = new Date();
+    var y = now.getFullYear(), mo = now.getMonth(), d = now.getDate();
+    var today = new Date(y, mo, d);              // 시각 빼고 날짜만으로 계산
+    var first = new Date(y, mo - m, 1);
+    var lastDay = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+    var target = new Date(first.getFullYear(), first.getMonth(), Math.min(d, lastDay));
+    var days = Math.round((today.getTime() - target.getTime()) / 86400000);
+    return Math.max(1, days);
+  }
+
+  function fmtInt(v) { return Math.round(v).toLocaleString("ko-KR"); }
+  function trim1(v) { var s = v.toFixed(1); return s.slice(-2) === ".0" ? s.slice(0, -2) : s; }
+  function fmtCount(v) {
+    if (!isFinite(v) || v <= 0) return "0";
+    if (v >= 100) return fmtInt(v);
+    if (v >= 1) return trim1(v);
+    if (v >= 0.01) return v.toFixed(2);
+    return "0";
+  }
+  function fmtKm(km) {
+    if (!isFinite(km) || km <= 0) return "0";
+    if (km >= 1000) return fmtInt(km);
+    if (km >= 10) return trim1(km);
+    return km.toFixed(1);
+  }
+  // 서울→부산처럼 큰 단위는 1번이 안 되면 %로 보여준다 ("0.24번" 방지)
+  function fmtTrip(v, unit) {
+    if (!isFinite(v) || v <= 0) return "0" + unit;
+    if (v >= 1) return fmtCount(v) + unit;
+    var pct = v * 100;
+    if (pct >= 10) return Math.round(pct) + "%";
+    if (pct >= 1) return trim1(pct) + "%";
+    if (pct >= 0.1) return pct.toFixed(1) + "%";
+    return "0.1%";
+  }
+
+  function compute(o) {
+    var months = o.months === "custom" ? o.customMonths : o.months;
+    var days = daysForMonths(months);
+    var value = Number(o.value);
+    if (!isFinite(value) || value < 0) value = 0;
+    var weight = Number(o.weight);
+    if (!isFinite(weight) || weight <= 0) weight = 55;
+    if (weight > 250) weight = 250;
+
+    var totalSteps;
+    if (o.unit === "km") {
+      var inKm = o.mode === "daily" ? value * days : value;
+      totalSteps = Math.round(inKm * 1000 / M_PER_STEP);
+    } else {
+      totalSteps = Math.round(o.mode === "daily" ? value * days : value);
+    }
+    var totalKm = totalSteps * M_PER_STEP / 1000;
+    var dailySteps = totalSteps / days;
+    var kcal = totalSteps * KCAL_PER_STEP_KG * weight;
+    var fatYear = dailySteps * 365 * KCAL_PER_STEP_KG * weight / KCAL_PER_KG_FAT;
+    var extra = Number(o.extra);
+    if (!isFinite(extra) || extra < 0) extra = 0;
+    var extraFat = extra * 365 * KCAL_PER_STEP_KG * weight / KCAL_PER_KG_FAT;
+
+    var label = o.months === "custom"
+      ? "최근 " + months + "개월"
+      : (months === 12 ? "최근 1년" : "최근 " + months + "개월");
+
+    return {
+      days: days,
+      periodLabel: label,
+      totalSteps: totalSteps,
+      km: totalKm,
+      kcal: kcal,
+      dailySteps: dailySteps,
+      fatYear: fatYear,
+      extraSteps: extra,
+      extraFat: extraFat,
+      weight: weight,
+      eating: [
+        { emoji: "🍗", name: "치킨", basis: "후라이드 한 마리 2,000kcal", value: kcal / KCAL_CHICKEN, unit: "마리" },
+        { emoji: "🍜", name: "엽떡", basis: "한 그릇 1,500kcal", value: kcal / KCAL_TTEOK, unit: "그릇" },
+        { emoji: "☕", name: "아메리카노", basis: "한 잔 10kcal", value: kcal / KCAL_AMERICANO, unit: "잔" },
+        { emoji: "🍚", name: "밥", basis: "한 공기 300kcal", value: kcal / KCAL_RICE, unit: "공기" }
+      ],
+      distance: [
+        { name: "서울 → 부산 왕복", basis: "800km", value: totalKm / KM_BUSAN_RT, unit: "번" },
+        { name: "한라산 성판악 왕복", basis: "19.2km", value: totalKm / KM_HALLASAN_RT, unit: "번" },
+        { name: "마라톤 풀코스", basis: "42.195km", value: totalKm / KM_MARATHON, unit: "회" }
+      ]
+    };
+  }
+  /* ================= /CORE ================= */
+
+  /* ================= CARD DRAW (canvas) ================= */
+  var FONT = '"Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif';
+  var EMOJI_FONT = '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+  var ORANGE1 = "#FF7A00", ORANGE2 = "#FF9436";
+
+  function rr(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function fitSize(ctx, text, maxW, size, weight, family) {
+    var s = size;
+    while (s > 12) {
+      ctx.font = weight + " " + s + "px " + (family || FONT);
+      if (ctx.measureText(text).width <= maxW) break;
+      s -= 2;
+    }
+    return s;
+  }
+
+  function drawCard(ctx, d) {
+    var W = 1080, H = 1350;
+    ctx.clearRect(0, 0, W, H);
+
+    ctx.fillStyle = "#12161E";
+    ctx.fillRect(0, 0, W, H);
+
+    var glow = ctx.createRadialGradient(920, 40, 0, 920, 40, 720);
+    glow.addColorStop(0, "rgba(255,122,0,0.26)");
+    glow.addColorStop(1, "rgba(255,122,0,0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, W, H);
+
+    var glow2 = ctx.createRadialGradient(80, 1300, 0, 80, 1300, 620);
+    glow2.addColorStop(0, "rgba(255,148,54,0.10)");
+    glow2.addColorStop(1, "rgba(255,148,54,0)");
+    ctx.fillStyle = glow2;
+    ctx.fillRect(0, 0, W, H);
+
+    rr(ctx, 56, 56, 968, 1238, 56);
+    ctx.fillStyle = "#1B212D";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,0.06)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+
+    // 헤더
+    ctx.fillStyle = "#8B95A1";
+    ctx.font = "700 30px " + FONT;
+    ctx.fillText("걸음수 환산 결과", 120, 145);
+
+    var badge = "4년 5개월 · 매일 1만 보";
+    ctx.font = "700 22px " + FONT;
+    var bw = ctx.measureText(badge).width + 44;
+    rr(ctx, 960 - bw, 108, bw, 50, 25);
+    ctx.fillStyle = "rgba(255,122,0,0.13)";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255,122,0,0.32)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = ORANGE2;
+    ctx.textAlign = "center";
+    ctx.fillText(badge, 960 - bw / 2, 141);
+    ctx.textAlign = "left";
+
+    ctx.fillStyle = "#6B7684";
+    ctx.font = "600 27px " + FONT;
+    ctx.fillText(d.periodLabel + " · " + d.days + "일", 120, 205);
+
+    // 총 걸음
+    var stepsTxt = fmtInt(d.totalSteps);
+    var sz = fitSize(ctx, stepsTxt, 600, 104, "800");
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "800 " + sz + "px " + FONT;
+    ctx.fillText(stepsTxt, 120, 330);
+    var stepW = ctx.measureText(stepsTxt).width;
+    ctx.fillStyle = "#8B95A1";
+    ctx.font = "700 34px " + FONT;
+    ctx.fillText("걸음", 120 + stepW + 16, 330);
+
+    // 거리 · 칼로리
+    var sub = fmtKm(d.km) + " km   ·   " + fmtInt(d.kcal) + " kcal";
+    ctx.fillStyle = "#B0B8C1";
+    ctx.font = "600 34px " + FONT;
+    ctx.fillText(sub, 120, 396);
+
+    ctx.strokeStyle = "rgba(255,255,255,0.07)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(120, 450);
+    ctx.lineTo(960, 450);
+    ctx.stroke();
+
+    // 먹는 걸로 치면
+    ctx.fillStyle = "#8B95A1";
+    ctx.font = "800 26px " + FONT;
+    ctx.fillText("먹는 걸로 치면", 120, 512);
+
+    var cols = [120, 560], rowsY = [578, 708];
+    for (var i = 0; i < d.eating.length; i++) {
+      var it = d.eating[i];
+      var cx = cols[i % 2], cy = rowsY[Math.floor(i / 2)];
+      ctx.font = "400 40px " + EMOJI_FONT;
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillText(it.emoji, cx, cy);
+      var vt = fmtCount(it.value) + it.unit;
+      var vs = fitSize(ctx, vt, 330, 40, "800");
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = "800 " + vs + "px " + FONT;
+      ctx.fillText(vt, cx + 62, cy);
+      ctx.fillStyle = "#8B95A1";
+      ctx.font = "600 23px " + FONT;
+      ctx.fillText(it.basis, cx + 62, cy + 40);
+    }
+
+    // 거리로 치면
+    ctx.fillStyle = "#8B95A1";
+    ctx.font = "800 26px " + FONT;
+    ctx.fillText("거리로 치면", 120, 832);
+
+    var ry = [896, 968, 1040];
+    for (var j = 0; j < d.distance.length && j < 3; j++) {
+      var dj = d.distance[j];
+      ctx.fillStyle = "#B0B8C1";
+      ctx.font = "600 30px " + FONT;
+      ctx.fillText(dj.name, 120, ry[j]);
+      var val = fmtTrip(dj.value, dj.unit);
+      ctx.fillStyle = ORANGE2;
+      ctx.font = "800 34px " + FONT;
+      ctx.textAlign = "right";
+      ctx.fillText(val, 960, ry[j]);
+      ctx.textAlign = "left";
+    }
+
+    // 지방
+    rr(ctx, 120, 1082, 840, 146, 30);
+    ctx.fillStyle = "rgba(255,122,0,0.12)";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255,122,0,0.34)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = "#FFB979";
+    ctx.font = "700 24px " + FONT;
+    ctx.fillText("1년 꾸준히 걸으면", 156, 1132);
+    var fatTxt = "체지방 " + fmtCount(d.fatYear) + "kg어치";
+    var fs = fitSize(ctx, fatTxt, 700, 44, "800");
+    ctx.fillStyle = ORANGE2;
+    ctx.font = "800 " + fs + "px " + FONT;
+    ctx.fillText(fatTxt, 156, 1186);
+    ctx.fillStyle = "#9AA3AE";
+    ctx.font = "600 20px " + FONT;
+    ctx.fillText("7,700kcal = 1kg · 먹는 양 그대로일 때", 156, 1214);
+
+    // 푸터
+    ctx.fillStyle = "#6B7684";
+    ctx.font = "600 23px " + FONT;
+    ctx.fillText("blog.naver.com/etldmsdla", 120, 1268);
+    ctx.textAlign = "right";
+    ctx.fillText("@limsieun3", 960, 1268);
+    ctx.textAlign = "left";
+  }
+  /* ================= /CARD DRAW ================= */
+
+  /* ================= UI ================= */
+  var state = {
+    months: 1,
+    customMonths: 3,
+    mode: "daily",
+    unit: "step",
+    value: 10000,
+    weight: 55,
+    extra: 2000
+  };
+
+  var $ = function (id) { return document.getElementById(id); };
+  var elPeriod = $("periodChips"), elCustRow = $("custRow"), elCust = $("custInput");
+  var elVal = $("valInput"), elUnit = $("unitSeg"), elConv = $("convLine");
+  var elQuick = $("quickChips"), elMode = $("modeChips"), elWeight = $("weightInput");
+  var elSteps = $("outSteps"), elKm = $("outKm"), elKcal = $("outKcal");
+  var elPeriodOut = $("periodOut"), elFoods = $("foods"), elRows = $("rows");
+  var elFat = $("outFat"), elExtra = $("extraOut"), elExtraChips = $("extraChips");
+  var elSheet = $("sheet"), elImg = $("previewImg"), elToast = $("toast");
+  var canvas = $("cardCanvas"), ctx = canvas.getContext("2d");
+
+  var cardBlob = null, cardFile = null, cardUrl = null, last = null;
+  var timer = null, toastTimer = null;
+
+  function num(s) {
+    var cleaned = String(s).replace(/[^0-9.]/g, "");
+    var parts = cleaned.split(".");
+    if (parts.length > 2) cleaned = parts[0] + "." + parts.slice(1).join("");
+    return cleaned === "" || cleaned === "." ? 0 : Number(cleaned);
+  }
+  function group(n) {
+    var s = String(n).split(".");
+    s[0] = s[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return s.join(".");
+  }
+
+  function currentInput() {
+    return {
+      months: state.months,
+      customMonths: state.customMonths,
+      mode: state.mode,
+      unit: state.unit,
+      value: state.value,
+      weight: state.weight,
+      extra: state.extra
+    };
+  }
+
+  function run() {
+    last = compute(currentInput());
+    render(last);
+    scheduleCard();
+  }
+
+  function render(d) {
+    elPeriodOut.textContent = d.periodLabel + " · " + d.days + "일";
+    elSteps.textContent = fmtInt(d.totalSteps);
+    elKm.textContent = fmtKm(d.km);
+    elKcal.textContent = fmtInt(d.kcal);
+    elFat.textContent = fmtCount(d.fatYear) + "kg";
+    elExtra.textContent = fmtCount(d.extraFat) + "kg";
+
+    var html = "";
+    for (var i = 0; i < d.eating.length; i++) {
+      var it = d.eating[i];
+      html += '<div class="food"><div class="e">' + it.emoji + '</div>'
+        + '<div class="v">' + fmtCount(it.value) + '<small>' + it.unit + '</small></div>'
+        + '<div class="l">' + it.name + '</div>'
+        + '<div class="b">' + it.basis + '</div></div>';
+    }
+    elFoods.innerHTML = html;
+
+    var rows = "";
+    for (var j = 0; j < d.distance.length; j++) {
+      var dj = d.distance[j];
+      rows += '<div class="row"><div class="l">' + dj.name + '<em>' + dj.basis + '</em></div>'
+        + '<div class="v">' + fmtTrip(dj.value, dj.unit) + '</div></div>';
+    }
+    elRows.innerHTML = rows;
+
+    // 입력 → 환산 한 줄
+    var per = state.mode === "daily" ? "하루 " : "총 ";
+    if (state.unit === "step") {
+      var kmShown = String(Number((state.value * M_PER_STEP / 1000).toFixed(2)));
+      elConv.innerHTML = per + fmtInt(state.value) + "걸음 = 약 <b>" + group(Number(kmShown)) + "km</b>";
+    } else {
+      elConv.innerHTML = per + group(state.value) + "km = 약 <b>" + fmtInt(state.value * 1000 / M_PER_STEP) + "걸음</b>";
+    }
+  }
+
+  /* ---------- 결과 카드 이미지 ---------- */
+  function scheduleCard() {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(makeCard, 180);
+  }
+
+  function makeCard() {
+    if (!last) return;
+    try {
+      if (!ctx) return;
+      drawCard(ctx, last);
+    } catch (e) { return; }
+    canvasToBlob(function (blob) {
+      if (!blob) return;
+      cardBlob = blob;
+      try {
+        cardFile = new File([blob], "걸음수_환산기.png", { type: "image/png" });
+      } catch (e) { cardFile = null; }
+      if (cardUrl) URL.revokeObjectURL(cardUrl);
+      cardUrl = URL.createObjectURL(blob);
+      elImg.src = cardUrl;
+    });
+  }
+
+  function canvasToBlob(cb) {
+    if (canvas.toBlob) {
+      canvas.toBlob(function (b) { cb(b); }, "image/png");
+      return;
+    }
+    var url = canvas.toDataURL("image/png");
+    var bin = atob(url.split(",")[1]);
+    var arr = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    cb(new Blob([arr], { type: "image/png" }));
+  }
+
+  function isMobile() {
+    return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  }
+
+  function saveImage() {
+    if (!cardBlob) {
+      toast("카드를 만드는 중입니다");
+      makeCard();
+      return;
+    }
+    if (isMobile() && cardFile && navigator.canShare && navigator.canShare({ files: [cardFile] })) {
+      try {
+        var p = navigator.share({ files: [cardFile], title: "내 걸음수 환산기" });
+        if (p && p["catch"]) p["catch"](function () {});
+        return;
+      } catch (e) { /* 공유가 막히면 다운로드로 */ }
+    }
+    var url = cardUrl || URL.createObjectURL(cardBlob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "걸음수_환산기.png";
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    toast("저장했어요. 안 되면 이미지를 길게 눌러주세요");
+  }
+
+  function openSheet() {
+    if (!cardUrl) makeCard();
+    elSheet.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+  function closeSheet() {
+    elSheet.hidden = true;
+    document.body.style.overflow = "";
+  }
+
+  function toast(msg) {
+    elToast.textContent = msg;
+    elToast.classList.add("on");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { elToast.classList.remove("on"); }, 2400);
+  }
+
+  /* ---------- 이벤트 ---------- */
+  elPeriod.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-months]");
+    if (!b) return;
+    var v = b.getAttribute("data-months");
+    state.months = v === "custom" ? "custom" : Number(v);
+    var kids = elPeriod.querySelectorAll("button");
+    for (var i = 0; i < kids.length; i++) kids[i].classList.toggle("on", kids[i] === b);
+    elCustRow.hidden = v !== "custom";
+    if (v === "custom") {
+      state.customMonths = Math.max(1, Math.round(num(elCust.value) || 3));
+      elCust.value = String(state.customMonths);
+    }
+    run();
+  });
+
+  elCust.addEventListener("input", function () {
+    var v = Math.max(1, Math.round(num(elCust.value)));
+    state.customMonths = v || 1;
+    if (state.months === "custom") run();
+  });
+  elCust.addEventListener("blur", function () {
+    if (elCust.value !== String(state.customMonths)) elCust.value = String(state.customMonths);
+  });
+
+  elUnit.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-unit]");
+    if (!b) return;
+    var u = b.getAttribute("data-unit");
+    if (u === state.unit) return;
+    // 넣은 값은 버리지 않고 단위만 바꿔서 환산해 준다
+    if (u === "km") {
+      state.value = Math.round(state.value * M_PER_STEP) / 1000;
+      state.value = Number(state.value.toFixed(2));
+    } else {
+      state.value = Math.round(state.value * 1000 / M_PER_STEP);
+    }
+    state.unit = u;
+    var kids = elUnit.querySelectorAll("button");
+    for (var i = 0; i < kids.length; i++) kids[i].classList.toggle("on", kids[i] === b);
+    elQuick.style.display = u === "step" && state.mode === "daily" ? "" : "none";
+    elVal.value = group(state.value);
+    elVal.setAttribute("inputmode", u === "km" ? "decimal" : "numeric");
+    run();
+  });
+
+  elMode.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-mode]");
+    if (!b) return;
+    state.mode = b.getAttribute("data-mode");
+    var kids = elMode.querySelectorAll("button");
+    for (var i = 0; i < kids.length; i++) kids[i].classList.toggle("on", kids[i] === b);
+    elQuick.style.display = state.mode === "daily" ? "" : "none";
+    run();
+  });
+
+  elVal.addEventListener("input", function () {
+    state.value = num(elVal.value);
+    run();
+  });
+  elVal.addEventListener("blur", function () {
+    if (state.value > 0) elVal.value = group(state.value);
+  });
+
+  elQuick.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-quick]");
+    if (!b) return;
+    state.value = Number(b.getAttribute("data-quick"));
+    elVal.value = group(state.value);
+    run();
+  });
+
+  elWeight.addEventListener("input", function () {
+    var w = num(elWeight.value);
+    state.weight = w;
+    run();
+  });
+  elWeight.addEventListener("blur", function () {
+    if (!state.weight || state.weight <= 0) {
+      state.weight = 55;
+      elWeight.value = "55";
+      run();
+    }
+  });
+
+  elExtraChips.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-extra]");
+    if (!b) return;
+    state.extra = Number(b.getAttribute("data-extra"));
+    var kids = elExtraChips.querySelectorAll("button");
+    for (var i = 0; i < kids.length; i++) kids[i].classList.toggle("on", kids[i] === b);
+    run();
+  });
+
+  $("saveBtn").addEventListener("click", openSheet);
+  $("closeSheet").addEventListener("click", closeSheet);
+  $("dlBtn").addEventListener("click", saveImage);
+  elSheet.addEventListener("click", function (e) { if (e.target === elSheet) closeSheet(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !elSheet.hidden) closeSheet(); });
+
+  if (document.fonts && document.fonts.ready && document.fonts.ready.then) {
+    document.fonts.ready.then(function () { makeCard(); });
+  }
+
+  run();
+})();
+</script>
+</body>
+</html>
